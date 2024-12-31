@@ -1,3 +1,28 @@
+//Receive on companion device FROM fitbit
+
+import * as messaging from "messaging";
+
+
+messaging.peerSocket.addEventListener("open", (evt) => {
+  console.log("Companion is ready to send or receive messages");
+});
+
+messaging.peerSocket.addEventListener("error", (err) => {
+  console.error(`Connection error: ${err.code} - ${err.message}`);
+});
+
+messaging.peerSocket.addEventListener("message", (evt) => {
+    console.log("Received message!")
+    console.error(JSON.stringify(evt.data));
+});
+  
+
+
+
+
+//Send from companion device TO server
+
+
 let url = "http://localhost:3000/"
 
 fetch(url).then( (res) => {
@@ -10,7 +35,7 @@ fetch(url).then( (res) => {
     console.log(data)
 })
 .catch((err) => {
-    console.log("Error: ", err)
+    console.log("Error connecting to server: ", err)
 })
 
 
@@ -34,7 +59,7 @@ async function uploadFile() {
             readings: [1, 2, 3, 4, 5]
         };
 
-        console.log('Attempting to upload:', fileData);  // Debug log
+        console.log('Attempting to upload to server:', fileData);  // Debug log
 
         const response = await fetch('http://localhost:3000/upload', {
             method: 'POST',
@@ -54,8 +79,8 @@ async function uploadFile() {
         console.log('Upload successful:', result);
         
     } catch (error) {
-        console.error('Upload failed - Full error:', error);  // Enhanced error logging
-        console.error('Error message:', error.message);       // Specific error message
+        console.error('server Upload failed - Full error:', error);  // Enhanced error logging
+        console.error('server Error message:', error.message);       // Specific error message
     }
 }
 // Execute the upload

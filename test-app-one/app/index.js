@@ -12,18 +12,30 @@ function locationError(error) {
               "Message: " + error.message);
 }
 
-import { outbox } from "file-transfer";
 
-function transferData() {
-  let queuedFile = 'FILE_NAME.bin';
-  outbox.enqueueFile(queuedFile)
-  .then((ft) => {
-    console.log('Transfer of ' + ft.name + ' successfully queued.');
-    ft.onchange = () => {
-      console.log('File Transfer State: ' + ft.readyState);
-      if (ft.readyState === 'transferred') {
-        console.log('Transfer of ' + ft.name + ' completed.');
-      }
-    }
-  })
+import * as messaging from "messaging";
+
+
+messaging.peerSocket.addEventListener("open", (evt) => {
+  console.log("App is ready to send or receive messages");
+  sendMessage()
+});
+
+messaging.peerSocket.addEventListener("error", (err) => {
+  console.error(`Connection error: ${err.code} - ${err.message}`);
+});
+
+function sendMessage() {
+  // Sample data
+  const data = {
+    title: 'My test data',
+    isTest: true,
+    records: [1, 2, 3, 4]
+  }
+
+  if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+    // Send the data to peer as a message
+    messaging.peerSocket.send(data);
+  }
 }
+
