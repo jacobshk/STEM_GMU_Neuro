@@ -1,6 +1,10 @@
-Run webserver; currently running on localhost:3000 
+Run webserver (node server.js in proper dir); currently running on localhost:3000 
 
 Separately, use fitbit CLI (npx fitbit) to run the fitbit app/companion app on fitbit OS simulator (windows) 
+
+In fitbit CLI, run bi (in test-app-one dir) to build & install the code onto the Fitbit OS device
+
+In fitbit OS device, run app
 
 ## Overview 
 

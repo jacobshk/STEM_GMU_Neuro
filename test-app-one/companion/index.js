@@ -2,62 +2,56 @@
 
 import * as messaging from "messaging";
 
+initializeCompanion()
 
-messaging.peerSocket.addEventListener("open", (evt) => {
-  console.log("Companion is ready to send or receive messages");
-});
+function initializeCompanion(){
+    setupMessaging()
+    forwardMessages()
+}
 
-messaging.peerSocket.addEventListener("error", (err) => {
-  console.error(`Connection error: ${err.code} - ${err.message}`);
-});
+//initialize socket connection between companion/fitbit
+// Setup messaging handlers
+function setupMessaging() {
+  if (messaging.peerSocket) {
+    messaging.peerSocket.addEventListener("open", () => {
+      console.log("Companion is ready to send or receive messages");
+    });
 
-messaging.peerSocket.addEventListener("message", (evt) => {
-    console.log("Received message!")
-    console.error(JSON.stringify(evt.data));
-});
+    messaging.peerSocket.addEventListener("error", (err) => {
+      console.error(`Connection error: ${err.code} - ${err.message}`);
+    });
+  } else {
+    console.warn("Messaging peerSocket is unavailable.");
+  }
+}
   
+function forwardMessages(){
 
+    //listen for messages from fitbit 
+    messaging.peerSocket.addEventListener("message", (evt) => {
+        console.log("Received message!")
+        console.log(JSON.stringify(evt.data));
 
+        //forward messages to server 
 
-
-//Send from companion device TO server
-
-
-let url = "http://localhost:3000/"
-
-fetch(url).then( (res) => {
-    console.log("here")
-    console.log(res);
-    return(res.text())
-})
-.then((data) =>{
-    console.log("logging data")
-    console.log(data)
-})
-.catch((err) => {
-    console.log("Error connecting to server: ", err)
-})
-
-
-
-// Create a sample data object
-const fileData = {
-    timestamp: new Date().toISOString(),
-    deviceId: 'fitbit123',
-    readings: [1, 2, 3, 4, 5]
-};
-
-// Convert to string/buffer
-const fileContent = JSON.stringify(fileData);
-
-// Send to server
-async function uploadFile() {
-    try {
+        // Create a sample data object
         const fileData = {
             timestamp: new Date().toISOString(),
             deviceId: 'fitbit123',
             readings: [1, 2, 3, 4, 5]
         };
+
+        // Send to server
+        
+        uploadFile(fileData);
+    });
+
+}
+
+
+
+async function uploadFile(fileData) {
+    try {
 
         console.log('Attempting to upload to server:', fileData);  // Debug log
 
@@ -83,8 +77,7 @@ async function uploadFile() {
         console.error('server Error message:', error.message);       // Specific error message
     }
 }
-// Execute the upload
-uploadFile();
+
 
 
 

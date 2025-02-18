@@ -1,41 +1,59 @@
 import { geolocation } from "geolocation";
-
-geolocation.watchPosition(locationSuccess, locationError, { timeout: 60 * 1000 });
-
-function locationSuccess(position) {
-    console.log("Latitude: " + position.coords.latitude,
-                "Longitude: " + position.coords.longitude);
-}
-
-function locationError(error) {
-  console.log("Error: " + error.code,
-              "Message: " + error.message);
-}
-
-
 import * as messaging from "messaging";
 
+// Initialize the application
+function initializeApp() {
+  setupMessaging();
+  watchLocation();
+}
 
-messaging.peerSocket.addEventListener("open", (evt) => {
-  console.log("App is ready to send or receive messages");
-  sendMessage()
-});
+// Setup messaging handlers
+function setupMessaging() {
+  if (messaging.peerSocket) {
+    messaging.peerSocket.addEventListener("open", () => {
+      console.log("App is ready to send or receive messages");
+    });
 
-messaging.peerSocket.addEventListener("error", (err) => {
-  console.error(`Connection error: ${err.code} - ${err.message}`);
-});
-
-function sendMessage() {
-  // Sample data
-  const data = {
-    title: 'My test data',
-    isTest: true,
-    records: [1, 2, 3, 4]
-  }
-
-  if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-    // Send the data to peer as a message
-    messaging.peerSocket.send(data);
+    messaging.peerSocket.addEventListener("error", (err) => {
+      console.error(`Connection error: ${err.code} - ${err.message}`);
+    });
+  } else {
+    console.warn("Messaging peerSocket is unavailable.");
   }
 }
 
+// Watch the user's location
+function watchLocation() {
+  geolocation.watchPosition(
+    handleLocationSuccess,
+    handleLocationError,
+    { timeout: 60 * 1000 }
+  );
+}
+
+// Handle successful location retrieval
+function handleLocationSuccess(position) {
+  const { latitude, longitude } = position.coords;
+  console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+  sendMessage({ latitude, longitude });
+}
+
+// Handle location retrieval errors
+function handleLocationError(error) {
+  console.error(`Geolocation error: ${error.message}`);
+  sendMessage(`geolocation error: ${error.message}` );
+
+}
+
+// Send a message to the peerSocket
+function sendMessage(data) {
+  if (messaging.peerSocket && messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+    messaging.peerSocket.send(data);
+    console.log("Message sent:", data);
+  } else {
+    console.warn("Cannot send message: peerSocket is not open");
+  }
+}
+
+// Start the app
+initializeApp();
