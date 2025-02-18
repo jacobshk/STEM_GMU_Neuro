@@ -35,10 +35,12 @@ function forwardMessages(){
         //forward messages to server 
 
         // Create a sample data object
+        //TODO: get unique identifer; some device ID? 
         const fileData = {
             timestamp: new Date().toISOString(),
             deviceId: 'fitbit123',
-            readings: [1, 2, 3, 4, 5]
+            latitude: evt.data.latitude,
+            longitude: evt.data.longitude
         };
 
         // Send to server

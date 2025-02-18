@@ -1,5 +1,7 @@
 import { geolocation } from "geolocation";
 import * as messaging from "messaging";
+import { me as device } from "device";
+
 
 // Initialize the application
 function initializeApp() {
@@ -48,8 +50,9 @@ function handleLocationError(error) {
 // Send a message to the peerSocket
 function sendMessage(data) {
   if (messaging.peerSocket && messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+    data.modelName = device.modelName;
     messaging.peerSocket.send(data);
-    console.log("Message sent:", data);
+    console.log("(App) Message sent:", data);
   } else {
     console.warn("Cannot send message: peerSocket is not open");
   }
