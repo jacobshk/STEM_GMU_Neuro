@@ -50,7 +50,11 @@ app.post('/upload', (req, res) => {
             message: 'File received successfully',
             receivedData: fileData
         });
-        
+
+        //Save data locally to CSV named for that device
+        write_csv(fileData) 
+
+
     } catch (error) {
         console.error('Server error:', error);
         res.status(500).json({
@@ -67,3 +71,46 @@ app.post('/upload', (req, res) => {
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
+
+function write_csv(args){
+
+    //args should be a request body; key val dict; should be of schema:
+    /*
+    timestamp: str
+    deviceId: str
+    latitude: float
+    longitude: float 
+    */
+   
+    const fs = require('fs');
+    const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+    
+    const filePath = `${args.deviceId}.csv`;
+    
+    // Check if the file exists, and if not, create it with headers
+    if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, 'timestamp,latitude,longitude\n');
+    }
+    
+    // Create CSV writer
+    const csvWriter = createCsvWriter({
+        path: filePath,
+        header: [
+            {id: 'timestamp', title: 'timestamp'},
+            {id: 'latitude', title: 'latitude'},
+            {id: 'longitude', title: 'longitude'}
+        ],
+        append: true
+    });
+    
+    // Data to write
+    const data = [
+        args,
+    ];
+    
+    // Write data to CSV
+    csvWriter.writeRecords(data)
+        .then(() => console.log('Data written successfully!'))
+        .catch((err) => console.error('Error writing to CSV:', err));
+}
+
