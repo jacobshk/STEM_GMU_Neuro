@@ -7,6 +7,8 @@ In fitbit CLI, run bi (in test-app-one dir) to build & install the code onto the
 In fitbit OS device, run app
 
 
+Note: stem-os.orc.gmu.edu:7798
+
 TODO: could use this to enrich: https://dev.fitbit.com/build/reference/device-api/user-profile/
 ## Overview 
 
