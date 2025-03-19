@@ -4,23 +4,52 @@ import * as messaging from "messaging";
 import { settingsStorage } from "settings";
 
 
+function safeParseJSON(jsonString) {
+  try {
+      return JSON.parse(jsonString);
+  } catch (error) {
+      console.error('Invalid JSON:', error.message);
+      return null; // or handle the error appropriately
+  }
+}
 
+/*
 settingsStorage.onchange = evt => {
   if (evt.key === "oauth") {
     // Settings page sent us an oAuth token
-    let data = JSON.parse(evt.newValue);
-    console.log("here");
-    console.log(data);
-    const email = settingsStorage.getItem("userEmail");
-    console.log(email)
+    console.log("here")
+    //the "user_id" field here is the same as the encodedId
+    //use user_id field in messages to server, to uniquely identify this user
+    let data = safeParseJSON(evt.newValue);
+    let user_id = (data['user_id']);
+    
   }
 };
+*/
 
+function waitForSettingsChange() {
+  return new Promise(resolve => {
+      settingsStorage.onchange = evt => {
+          console.log("using new user id");
+          let data = safeParseJSON(evt.newValue);
+          var user_id = data['user_id'];
+          console.log(user_id)
+          //for some reason, this function is called thrice for one click; the first and last are null; the middle is the good stuff
+          if( typeof(user_id) == 'string' ){
+            resolve(user_id); // Return user_id
+          }
+      };
+  });
+}
+
+let user_id 
 initializeCompanion()
 
-function initializeCompanion(){
-    setupMessaging()
-    forwardMessages()
+async function initializeCompanion(){
+  user_id = await waitForSettingsChange(); // Assign resolved value
+  console.log("Settings loaded... user_id: ", user_id)
+  setupMessaging()
+  forwardMessages()
 }
 
 //initialize socket connection between companion/fitbit
@@ -46,13 +75,10 @@ function forwardMessages(){
         console.log("Received message!")
         console.log(JSON.stringify(evt.data));
 
-        //forward messages to server 
-
-        // Create a sample data object
-        //TODO: get unique identifer; some device ID? 
+        console.log("Sending: ", user_id)
         const fileData = {
             timestamp: new Date().toISOString(),
-            deviceId: 'fitbit123',
+            user_id: user_id,
             latitude: evt.data.latitude,
             longitude: evt.data.longitude
         };
@@ -64,16 +90,15 @@ function forwardMessages(){
 
 }
 
-
-
 async function uploadFile(fileData) {
     try {
 
         console.log('Attempting to upload to server:', fileData);  // Debug log
 
-        const response = await fetch('http://localhost:3000/upload', {
-            method: 'POST',
+        const response = await fetch('https://stem-os.orc.gmu.edu:5000', {
+            method: 'PUT',
             headers: {
+                'user_id': user_id,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(fileData)
@@ -93,8 +118,3 @@ async function uploadFile(fileData) {
         console.error('server Error message:', error.message);       // Specific error message
     }
 }
-
-
-
-
-
