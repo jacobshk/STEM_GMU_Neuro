@@ -2,6 +2,13 @@ import { geolocation } from "geolocation";
 import * as messaging from "messaging";
 import { me as device } from "device";
 
+import { me as appbit } from "appbit";
+import { user } from "user-profile";
+
+if (appbit.permissions.granted("access_user_profile")) {
+   console.log((user.restingHeartRate || "Unknown") + " BPM");
+}
+
 
 // Initialize the application
 function initializeApp() {

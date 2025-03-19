@@ -1,6 +1,20 @@
 //Receive on companion device FROM fitbit
 
 import * as messaging from "messaging";
+import { settingsStorage } from "settings";
+
+
+
+settingsStorage.onchange = evt => {
+  if (evt.key === "oauth") {
+    // Settings page sent us an oAuth token
+    let data = JSON.parse(evt.newValue);
+    console.log("here");
+    console.log(data);
+    const email = settingsStorage.getItem("userEmail");
+    console.log(email)
+  }
+};
 
 initializeCompanion()
 
